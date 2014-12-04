@@ -88,14 +88,18 @@ def ping():
     opener.open(API_PING)
 
 def get_list(API):
+    global wait_list
+    global visited
     print("reading list")
     with opener.open(API) as f:
         json_data = f.read().decode()
     pic_list = json.loads(json_data)
     for photo in pic_list['photos']:
-        if photo not in visited:
+        if photo['id'] not in visited:
             photo['image_url'][1] = photo['image_url'][1].replace('4.jpg','5.jpg')
             wait_list.append(photo)
+    print('dowloaded:',len(visited))
+    print('to be dowloaded:',len(wait_list))
     json_file = open('pics.json','w+')
     json_file.write(json_data)
     json_file.close()
@@ -108,7 +112,7 @@ def handle_wait_list():
         count = count + 1
         percentage = 100.0*count/total
         print("%.1f%% is done on this page" %percentage)
-        visited.append(photo)
+        visited.append(photo['id'])
         
 def get_page(page):    
     print('Dolowding page: ',page)
@@ -127,9 +131,11 @@ def save_visited():
         pickle.dump(visited,f)
 
 def load_visited():
+    global visited
     print('Starting...')
     with open('visited','rb') as f:
         visited = pickle.load(f)
+    #print(visited)
 
 def main():
     try:
@@ -151,10 +157,6 @@ if __name__ == '__main__':
     except Exception as err:
         print('Somthing is wrong. Exiting...')
         print(err)
-
-
-
-
 
 
     
